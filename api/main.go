@@ -1,24 +1,28 @@
 package main
 
 import (
+	"html/template"
+	viewtemp "main/views"
 	"net/http"
-	"text/template"
 
 	"github.com/gorilla/mux"
 )
 
 var tpl *template.Template
+var (
+	homeView    *viewtemp.View
+	contactView *viewtemp.View
+)
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := tpl.ExecuteTemplate(w, "home.gohtml", nil); err != nil {
+	if err := homeView.Template.Execute(w, nil); err != nil {
 		panic(err)
 	}
 }
-
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := tpl.ExecuteTemplate(w, "contact.gohtml", nil); err != nil {
+	if err := contactView.Template.Execute(w, nil); err != nil {
 		panic(err)
 	}
 }
@@ -40,11 +44,12 @@ func init() {
 
 }
 func main() {
-
+	homeView = viewtemp.NewView("views/home.gohtml")
+	contactView = viewtemp.NewView("views/contact.gohtml")
 	router := mux.NewRouter()
 	router.HandleFunc("/", home)
 	router.HandleFunc("/faq", faq)
 	router.HandleFunc("/contact", contact)
-	router.NotFoundHandler = http.HandlerFunc(notFound)
+	router.NotFoundHandler = http.HandlerFunc(notFound) 
 	http.ListenAndServe(":8082", router)
 }
